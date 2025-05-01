@@ -1,0 +1,693 @@
+openapi: 3.0.0
+info:
+  title: LifeTree API
+  description: API documentation for the LifeTree application
+  version: 1.0.0
+  contact:
+    name: LifeTree Support
+    email: support@lifetree.com
+
+servers:
+  - url: http://localhost:8081/api
+    description: Local development server
+  - url: https://api.lifetree.com/api
+    description: Production server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # User-related schemas
+    CreateUserDto:
+      type: object
+      required:
+        - email
+        - password
+        - name
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          example: securePassword123
+        name:
+          type: string
+          example: John Doe
+
+    UserCredentialsDto:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          example: securePassword123
+
+    UserDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 22222222-2222-2222-2222-222222222222
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        name:
+          type: string
+          example: John Doe
+        role:
+          type: string
+          enum: [USER, ADMIN]
+          example: USER
+        createdAt:
+          type: string
+          format: date-time
+          example: 2023-01-01T00:00:00Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2023-01-01T00:00:00Z
+
+    LoginResponseDto:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserDto'
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    UpdateUserDto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: New Name
+        email:
+          type: string
+          format: email
+          example: newemail@example.com
+
+    # Requirement-related schemas
+    CreateRequirementDto:
+      type: object
+      required:
+        - title
+        - description
+      properties:
+        title:
+          type: string
+          example: Mobile App Development
+        description:
+          type: string
+          example: Develop a mobile version of the application with requirement and result listing features
+
+    RequirementDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 33333333-3333-3333-3333-333333333333
+        title:
+          type: string
+          example: Mobile App Development
+        description:
+          type: string
+          example: Develop a mobile version of the application with requirement and result listing features
+        status:
+          type: string
+          enum: [CREATED, IN_PROGRESS, COMPLETED, CANCELLED]
+          example: IN_PROGRESS
+        createdBy:
+          type: string
+          format: uuid
+          example: 11111111-1111-1111-1111-111111111111
+        createdAt:
+          type: string
+          format: date-time
+          example: 2023-01-01T00:00:00Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2023-01-01T00:00:00Z
+
+    UpdateRequirementDto:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Updated Mobile App Development
+        description:
+          type: string
+          example: Updated description for the mobile app development requirement
+        status:
+          type: string
+          enum: [CREATED, IN_PROGRESS, COMPLETED, CANCELLED]
+          example: COMPLETED
+
+    # Result-related schemas
+    CreateResultDto:
+      type: object
+      required:
+        - title
+        - description
+      properties:
+        title:
+          type: string
+          example: App Prototype Design
+        description:
+          type: string
+          example: Completed mobile app prototype design including all main pages and interaction logic
+        relatedRequirementId:
+          type: string
+          format: uuid
+          example: 33333333-3333-3333-3333-333333333333
+
+    ResultDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 66666666-6666-6666-6666-666666666666
+        title:
+          type: string
+          example: App Prototype Design
+        description:
+          type: string
+          example: Completed mobile app prototype design including all main pages and interaction logic
+        status:
+          type: string
+          enum: [DRAFT, COMPLETED, ARCHIVED, REJECTED]
+          example: DRAFT
+        relatedRequirementId:
+          type: string
+          format: uuid
+          example: 33333333-3333-3333-3333-333333333333
+        createdBy:
+          type: string
+          format: uuid
+          example: 11111111-1111-1111-1111-111111111111
+        createdAt:
+          type: string
+          format: date-time
+          example: 2023-01-01T00:00:00Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2023-01-01T00:00:00Z
+
+    UpdateResultDto:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Updated App Prototype Design
+        description:
+          type: string
+          example: Updated description for the app prototype design
+        status:
+          type: string
+          enum: [DRAFT, COMPLETED, ARCHIVED, REJECTED]
+          example: COMPLETED
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Email already exists
+
+paths:
+  # Health check
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Check if the API is up and running
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: UP
+
+  # Authentication endpoints
+  /auth/register:
+    post:
+      summary: Register a new user
+      description: Create a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserDto'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+        '400':
+          description: Bad request (e.g., email already exists)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      summary: User login
+      description: Authenticate user and get JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCredentialsDto'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponseDto'
+        '401':
+          description: Unauthorized (invalid credentials)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # User endpoints
+  /users/me:
+    get:
+      summary: Get current user information
+      description: Retrieve the information of the authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+        '401':
+          description: Unauthorized
+        '404':
+          description: User not found
+
+    put:
+      summary: Update current user information
+      description: Update the information of the authenticated user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserDto'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+        '400':
+          description: Bad request (e.g., email already exists)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: User not found
+
+  /users/{id}:
+    get:
+      summary: Get user by ID
+      description: Retrieve a user by their ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: User ID
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+        '401':
+          description: Unauthorized
+        '404':
+          description: User not found
+
+  # Admin endpoints
+  /admin/users:
+    get:
+      summary: Get all users (admin only)
+      description: Retrieve all users (requires admin role)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDto'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (not an admin)
+
+  # Requirement endpoints
+  /requirements:
+    get:
+      summary: Get all requirements
+      description: Retrieve all requirements
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Requirements retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RequirementDto'
+        '401':
+          description: Unauthorized
+
+    post:
+      summary: Create a new requirement
+      description: Create a new requirement
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRequirementDto'
+      responses:
+        '201':
+          description: Requirement created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementDto'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+
+  /requirements/{id}:
+    get:
+      summary: Get requirement by ID
+      description: Retrieve a requirement by its ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Requirement ID
+      responses:
+        '200':
+          description: Requirement retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementDto'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Requirement not found
+
+    put:
+      summary: Update requirement
+      description: Update an existing requirement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Requirement ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRequirementDto'
+      responses:
+        '200':
+          description: Requirement updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementDto'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Requirement not found
+
+    delete:
+      summary: Delete requirement
+      description: Delete an existing requirement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Requirement ID
+      responses:
+        '204':
+          description: Requirement deleted successfully
+        '401':
+          description: Unauthorized
+        '404':
+          description: Requirement not found
+
+  # Result endpoints
+  /results:
+    get:
+      summary: Get all results
+      description: Retrieve all results
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Results retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResultDto'
+        '401':
+          description: Unauthorized
+
+    post:
+      summary: Create a new result
+      description: Create a new result
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateResultDto'
+      responses:
+        '201':
+          description: Result created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultDto'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+
+  /results/{id}:
+    get:
+      summary: Get result by ID
+      description: Retrieve a result by its ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Result ID
+      responses:
+        '200':
+          description: Result retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultDto'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Result not found
+
+    put:
+      summary: Update result
+      description: Update an existing result
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Result ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateResultDto'
+      responses:
+        '200':
+          description: Result updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultDto'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Result not found
+
+    delete:
+      summary: Delete result
+      description: Delete an existing result
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Result ID
+      responses:
+        '204':
+          description: Result deleted successfully
+        '401':
+          description: Unauthorized
+        '404':
+          description: Result not found
+
+  /results/user/{userId}:
+    get:
+      summary: Get results by user ID
+      description: Retrieve all results created by a specific user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: User ID
+      responses:
+        '200':
+          description: Results retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResultDto'
+        '400':
+          description: Bad request (invalid user ID)
+        '401':
+          description: Unauthorized
+
+  /results/requirement/{requirementId}:
+    get:
+      summary: Get results by requirement ID
+      description: Retrieve all results related to a specific requirement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: requirementId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Requirement ID
+      responses:
+        '200':
+          description: Results retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResultDto'
+        '400':
+          description: Bad request (invalid requirement ID)
+        '401':
+          description: Unauthorized
