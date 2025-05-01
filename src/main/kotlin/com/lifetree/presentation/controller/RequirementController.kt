@@ -6,6 +6,7 @@ import com.lifetree.application.dto.requirement.RequirementDto
 import com.lifetree.application.dto.requirement.UpdateRequirementDto
 import com.lifetree.application.service.RequirementApplicationService
 import com.lifetree.domain.model.requirement.RequirementId
+import com.lifetree.domain.model.user.UserId
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 
@@ -26,8 +27,14 @@ class RequirementController(
         return requirementService.getRequirementById(requirementId)
     }
 
-    suspend fun createRequirement(createDto: CreateRequirementDto): RequirementDto {
-        return requirementService.createRequirement(createDto)
+    suspend fun createRequirement(createDto: CreateRequirementDto, principal: JWTPrincipal): RequirementDto? {
+        val userId = principal.payload.getClaim("id").asString()
+        val userIdObj = try {
+            UserId.fromString(userId)
+        } catch (e: IllegalArgumentException) {
+            return null
+        }
+        return requirementService.createRequirement(createDto,userIdObj)
     }
 
     suspend fun updateRequirement(id: String, updateDto: UpdateRequirementDto): RequirementDto? {

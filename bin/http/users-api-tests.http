@@ -2,7 +2,9 @@
 
 ### 变量设置
 @baseUrl = http://localhost:8081/api
-@authToken = {{login.response.body.token}}
+#@authToken = {{login.response.body.token}}
+
+
 
 ### 用户注册
 POST {{baseUrl}}/auth/register
@@ -23,6 +25,8 @@ Content-Type: application/json
   "email": "newuser@example.com",
   "password": "securePassword123"
 }
+
+> {% client.global.set("authToken", response.body.token); %}
 
 ### 获取当前用户信息
 GET {{baseUrl}}/users/me

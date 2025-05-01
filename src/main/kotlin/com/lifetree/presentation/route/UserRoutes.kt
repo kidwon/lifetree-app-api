@@ -79,6 +79,48 @@ fun Route.userRoutes() {
                     call.respond(HttpStatusCode.NotFound, "User not found")
                 }
             }
+
+            // Update current user information
+            put("/me") {
+                val principal = call.principal<JWTPrincipal>()
+                    ?: return@put call.respond(HttpStatusCode.Unauthorized)
+
+                try {
+                    val updateDto = call.receive<com.lifetree.application.dto.user.UpdateUserDto>()
+                    val user = userController.updateCurrentUser(principal, updateDto)
+
+                    if (user != null) {
+                        call.respond(user)
+                    } else {
+                        call.respond(HttpStatusCode.NotFound, "User not found")
+                    }
+                } catch (e: IllegalArgumentException) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
+                } catch (e: ContentTransformationException) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid request data"))
+                }
+            }
+        }
+    }
+    // Admin routes
+    route("/api/admin") {
+        authenticate {
+            // Admin-only access to all users
+            get("/users") {
+                // Get the principal
+                val principal = call.principal<JWTPrincipal>()
+                    ?: return@get call.respond(HttpStatusCode.Unauthorized)
+
+                // Check if user is admin
+                if (!userController.isAdmin(principal)) {
+                    call.respond(HttpStatusCode.Forbidden, "Admin access required")
+                    return@get
+                }
+
+                // Get all users
+                val users = userController.getAllUsers()
+                call.respond(users)
+            }
         }
     }
 }

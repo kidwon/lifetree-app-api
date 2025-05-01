@@ -5,6 +5,7 @@ import com.lifetree.presentation.controller.RequirementController
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -36,9 +37,16 @@ fun Route.requirementRoutes() {
 
             // 创建新需求
             post {
+                val principal = call.principal<JWTPrincipal>()
+                    ?: return@post call.respond(HttpStatusCode.Unauthorized)
+
                 val createDto = call.receive<com.lifetree.application.dto.requirement.CreateRequirementDto>()
-                val result = requirementController.createRequirement(createDto)
-                call.respond(HttpStatusCode.Created, result)
+                val result = requirementController.createRequirement(createDto,principal)
+                if (result != null) {
+                    call.respond(HttpStatusCode.Created, result)
+                } else {
+                    call.respond(HttpStatusCode.BadRequest, "Invalid user ID")
+                }
             }
 
             // 更新需求

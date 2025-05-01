@@ -2,6 +2,7 @@ package com.lifetree.application.service
 
 import com.lifetree.application.dto.user.CreateUserDto
 import com.lifetree.application.dto.user.LoginResponseDto
+import com.lifetree.application.dto.user.UpdateUserDto
 import com.lifetree.application.dto.user.UserCredentialsDto
 import com.lifetree.application.dto.user.UserDto
 import com.lifetree.application.mapper.UserMapper
@@ -61,5 +62,22 @@ class UserApplicationService(
     suspend fun getAllUsers(): List<UserDto> {
         return userRepository.findAll()
             .map { UserMapper.toDto(it) }
+    }
+
+    suspend fun updateUser(id: UserId, updateDto: UpdateUserDto): UserDto? {
+        val user = userRepository.findById(id) ?: return null
+
+        // Apply updates
+        updateDto.name?.let { user.updateName(it) }
+        updateDto.email?.let {
+            // Check if new email already exists (only if it's different from current)
+            if (user.getEmail() != it && userRepository.emailExists(it)) {
+                throw IllegalArgumentException("Email already exists")
+            }
+            user.updateEmail(it)
+        }
+
+        val updatedUser = userRepository.save(user)
+        return UserMapper.toDto(updatedUser)
     }
 }
