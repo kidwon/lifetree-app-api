@@ -2,7 +2,7 @@
 
 ### 变量设置
 @baseUrl = http://localhost:8081/api
-@authToken = {{login.response.body.token}}
+#@authToken = {{login.response.body.token}}
 
 ### 用户登录获取Token
 # @name login
@@ -19,7 +19,7 @@ GET {{baseUrl}}/requirements
 Authorization: Bearer {{authToken}}
 
 ### 获取单个需求
-GET {{baseUrl}}/requirements/b8f4c5a2-035c-480d-9e7a-e8fcdeba965b
+GET {{baseUrl}}/requirements/44444444-4444-4444-4444-444444444444
 Authorization: Bearer {{authToken}}
 
 ### 创建新需求
@@ -33,7 +33,7 @@ Authorization: Bearer {{authToken}}
 }
 
 ### 更新需求
-PUT {{baseUrl}}/requirements/b8f4c5a2-035c-480d-9e7a-e8fcdeba965b
+PUT {{baseUrl}}/requirements/44444444-4444-4444-4444-444444444444
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
@@ -44,5 +44,5 @@ Authorization: Bearer {{authToken}}
 }
 
 ### 删除需求
-DELETE {{baseUrl}}/requirements/b8f4c5a2-035c-480d-9e7a-e8fcdeba965b
+DELETE {{baseUrl}}/requirements/44444444-4444-4444-4444-444444444444
 Authorization: Bearer {{authToken}}

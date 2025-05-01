@@ -2,6 +2,7 @@ package com.lifetree.presentation.controller
 
 import com.lifetree.application.dto.user.CreateUserDto
 import com.lifetree.application.dto.user.LoginResponseDto
+import com.lifetree.application.dto.user.UpdateUserDto
 import com.lifetree.application.dto.user.UserCredentialsDto
 import com.lifetree.application.dto.user.UserDto
 import com.lifetree.application.service.UserApplicationService
@@ -47,5 +48,21 @@ class UserController(
 
     suspend fun getAllUsers(): List<UserDto> {
         return userService.getAllUsers()
+    }
+
+    suspend fun updateCurrentUser(principal: JWTPrincipal, updateDto: UpdateUserDto): UserDto? {
+        val userId = principal.payload.getClaim("id").asString()
+        val userIdObj = try {
+            UserId.fromString(userId)
+        } catch (e: IllegalArgumentException) {
+            return null
+        }
+
+        return userService.updateUser(userIdObj, updateDto)
+    }
+
+    suspend fun isAdmin(principal: JWTPrincipal): Boolean {
+        val role = principal.payload.getClaim("role").asString()
+        return role == "ADMIN"
     }
 }

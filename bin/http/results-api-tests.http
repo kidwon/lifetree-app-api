@@ -2,8 +2,17 @@
 
 ### 变量设置
 @baseUrl = http://localhost:8081/api
-@authToken = {{login.response.body.token}}
+#@authToken = {{login.response.body.token}}
 
+### 用户注册
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123",
+  "name": "test"
+}
 ### 用户登录获取Token
 # @name login
 POST {{baseUrl}}/auth/login
@@ -14,12 +23,14 @@ Content-Type: application/json
   "password": "password123"
 }
 
+> {% client.global.set("authToken", response.body.token); %}
+
 ### 获取所有结果
 GET {{baseUrl}}/results
 Authorization: Bearer {{authToken}}
 
 ### 获取单个结果
-GET {{baseUrl}}/results/d7e6f8c9-142d-4b5a-9e3f-1a2b3c4d5e6f
+GET {{baseUrl}}/results/66666666-6666-6666-6666-666666666666
 Authorization: Bearer {{authToken}}
 
 ### 创建新结果
@@ -30,11 +41,11 @@ Authorization: Bearer {{authToken}}
 {
   "title": "测试结果标题",
   "description": "这是一个用于测试的结果描述，包含详细的结果内容。",
-  "relatedRequirementId": "b8f4c5a2-035c-480d-9e7a-e8fcdeba965b"
+  "relatedRequirementId": "33333333-3333-3333-3333-333333333333"
 }
 
 ### 更新结果
-PUT {{baseUrl}}/results/d7e6f8c9-142d-4b5a-9e3f-1a2b3c4d5e6f
+PUT {{baseUrl}}/results/66666666-6666-6666-6666-666666666666
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
@@ -45,9 +56,9 @@ Authorization: Bearer {{authToken}}
 }
 
 ### 删除结果
-DELETE {{baseUrl}}/results/d7e6f8c9-142d-4b5a-9e3f-1a2b3c4d5e6f
+DELETE {{baseUrl}}/results/66666666-6666-6666-6666-666666666666
 Authorization: Bearer {{authToken}}
 
 ### 获取与特定需求相关的结果
-GET {{baseUrl}}/results/by-requirement/b8f4c5a2-035c-480d-9e7a-e8fcdeba965b
+GET {{baseUrl}}/results/requirement/33333333-3333-3333-3333-333333333333
 Authorization: Bearer {{authToken}}

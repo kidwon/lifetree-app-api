@@ -10,6 +10,7 @@ import com.lifetree.domain.model.requirement.RequirementId
 import com.lifetree.domain.model.requirement.RequirementStatus
 import com.lifetree.domain.model.user.UserId
 import com.lifetree.domain.repository.RequirementRepository
+import io.ktor.server.auth.jwt.JWTPrincipal
 import java.util.UUID
 
 class RequirementApplicationService(
@@ -30,15 +31,12 @@ class RequirementApplicationService(
             .map { RequirementMapper.toDto(it) }
     }
 
-    suspend fun createRequirement(dto: CreateRequirementDto): RequirementDto {
-        // TODO: 从认证上下文中获取当前用户ID
-        val userId = UserId(UUID.randomUUID()) // 临时，应该从JWT获取
-
+    suspend fun createRequirement(dto: CreateRequirementDto, currentUserId: UserId): RequirementDto {
         val requirement = Requirement.create(
             id = RequirementId.generate(),
             title = dto.title,
             description = dto.description,
-            createdBy = userId
+            createdBy = currentUserId
         )
 
         val savedRequirement = requirementRepository.save(requirement)
