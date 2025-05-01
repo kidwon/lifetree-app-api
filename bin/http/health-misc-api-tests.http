@@ -1,0 +1,32 @@
+### 健康检查与其他API测试
+
+### 变量设置
+@baseUrl = http://localhost:8081/api
+
+### 健康检查
+GET {{baseUrl}}/health
+
+### 环境信息 (无需认证)
+GET {{baseUrl}}/info
+
+### 获取API版本
+GET {{baseUrl}}/version
+
+### 变量设置 - 环境切换示例
+### 本地开发环境
+# @name dev
+@dev.baseUrl = http://localhost:8080/api
+
+### 测试环境
+# @name test
+@test.baseUrl = http://test-api.example.com/api
+
+### 生产环境
+# @name prod
+@prod.baseUrl = https://api.example.com/api
+
+### 使用特定环境变量 - 健康检查测试环境
+GET {{test.baseUrl}}/health
+
+### 使用特定环境变量 - 健康检查生产环境
+GET {{prod.baseUrl}}/health

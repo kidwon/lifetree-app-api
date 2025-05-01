@@ -1,0 +1,23 @@
+# 文件: src/main/resources/application.yaml
+ktor:
+  deployment:
+    port: 8080
+    watch:
+      - classes
+      - resources
+  application:
+    modules:
+      - com.lifetree.ApplicationKt.module
+
+database:
+  driver: "org.postgresql.Driver"
+  url: "jdbc:postgresql://localhost:5432/lifetree"
+  user: "postgres"
+  password: "password"
+
+jwt:
+  secret: "your-secret-key-should-be-changed-in-production"
+  issuer: "lifetree"
+  audience: "lifetree-users"
+  realm: "lifetree-app"
+  expiration: 3600000

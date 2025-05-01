@@ -1,0 +1,48 @@
+### 需求API测试
+
+### 变量设置
+@baseUrl = http://localhost:8081/api
+@authToken = {{login.response.body.token}}
+
+### 用户登录获取Token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### 获取所有需求
+GET {{baseUrl}}/requirements
+Authorization: Bearer {{authToken}}
+
+### 获取单个需求
+GET {{baseUrl}}/requirements/b8f4c5a2-035c-480d-9e7a-e8fcdeba965b
+Authorization: Bearer {{authToken}}
+
+### 创建新需求
+POST {{baseUrl}}/requirements
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "测试需求标题",
+  "description": "这是一个用于测试的需求描述，包含详细的需求内容。"
+}
+
+### 更新需求
+PUT {{baseUrl}}/requirements/b8f4c5a2-035c-480d-9e7a-e8fcdeba965b
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "更新后的需求标题",
+  "description": "这是更新后的需求描述内容。",
+  "status": "IN_PROGRESS"
+}
+
+### 删除需求
+DELETE {{baseUrl}}/requirements/b8f4c5a2-035c-480d-9e7a-e8fcdeba965b
+Authorization: Bearer {{authToken}}

@@ -1,0 +1,52 @@
+### 用户API测试
+
+### 变量设置
+@baseUrl = http://localhost:8081/api
+@authToken = {{login.response.body.token}}
+
+### 用户注册
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "newuser@example.com",
+  "name": "新用户",
+  "password": "securePassword123"
+}
+
+### 用户登录
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "newuser@example.com",
+  "password": "securePassword123"
+}
+
+### 获取当前用户信息
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{authToken}}
+
+### 更新用户信息
+PUT {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "更新后的用户名"
+}
+
+### 更改密码
+PUT {{baseUrl}}/users/me/password
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "currentPassword": "password123",
+  "newPassword": "newSecurePassword456"
+}
+
+### 管理员获取所有用户列表
+GET {{baseUrl}}/admin/users
+Authorization: Bearer {{authToken}}

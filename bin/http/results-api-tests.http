@@ -1,0 +1,53 @@
+### 结果API测试
+
+### 变量设置
+@baseUrl = http://localhost:8081/api
+@authToken = {{login.response.body.token}}
+
+### 用户登录获取Token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### 获取所有结果
+GET {{baseUrl}}/results
+Authorization: Bearer {{authToken}}
+
+### 获取单个结果
+GET {{baseUrl}}/results/d7e6f8c9-142d-4b5a-9e3f-1a2b3c4d5e6f
+Authorization: Bearer {{authToken}}
+
+### 创建新结果
+POST {{baseUrl}}/results
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "测试结果标题",
+  "description": "这是一个用于测试的结果描述，包含详细的结果内容。",
+  "relatedRequirementId": "b8f4c5a2-035c-480d-9e7a-e8fcdeba965b"
+}
+
+### 更新结果
+PUT {{baseUrl}}/results/d7e6f8c9-142d-4b5a-9e3f-1a2b3c4d5e6f
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "更新后的结果标题",
+  "description": "这是更新后的结果描述内容。",
+  "status": "PUBLISHED"
+}
+
+### 删除结果
+DELETE {{baseUrl}}/results/d7e6f8c9-142d-4b5a-9e3f-1a2b3c4d5e6f
+Authorization: Bearer {{authToken}}
+
+### 获取与特定需求相关的结果
+GET {{baseUrl}}/results/by-requirement/b8f4c5a2-035c-480d-9e7a-e8fcdeba965b
+Authorization: Bearer {{authToken}}
