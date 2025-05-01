@@ -1,50 +1,154 @@
-# lifetree-app-api
+# Lifetree App API
 
-This project was created using the [Ktor Project Generator](https://start.ktor.io).
+A domain-driven design (DDD) REST API for managing requirements and results tracking, built with Ktor and Kotlin.
 
-Here are some useful links to get you started:
+## Project Overview
 
-- [Ktor Documentation](https://ktor.io/docs/home.html)
-- [Ktor GitHub page](https://github.com/ktorio/ktor)
-- The [Ktor Slack chat](https://app.slack.com/client/T09229ZC6/C0A974TJ9). You'll need
-  to [request an invite](https://surveys.jetbrains.com/s3/kotlin-slack-sign-up) to join.
+Lifetree is a requirements and results management system that demonstrates clean architecture principles:
 
-## Features
+- **Domain Layer**: Contains core business entities, repositories, and services
+- **Application Layer**: Provides use case implementations and DTOs
+- **Infrastructure Layer**: Implements persistence, security, and external integrations
+- **Presentation Layer**: Handles HTTP requests with Ktor controllers and routes
 
-Here's a list of features included in this project:
+## Technology Stack
 
-| Name                                                                   | Description                                                                        |
-| ------------------------------------------------------------------------|------------------------------------------------------------------------------------ |
-| [CORS](https://start.ktor.io/p/cors)                                   | Enables Cross-Origin Resource Sharing (CORS)                                       |
-| [Routing](https://start.ktor.io/p/routing)                             | Provides a structured routing DSL                                                  |
-| [Content Negotiation](https://start.ktor.io/p/content-negotiation)     | Provides automatic content conversion according to Content-Type and Accept headers |
-| [kotlinx.serialization](https://start.ktor.io/p/kotlinx-serialization) | Handles JSON serialization using kotlinx.serialization library                     |
-| [Call Logging](https://start.ktor.io/p/call-logging)                   | Logs client requests                                                               |
-| [Authentication](https://start.ktor.io/p/auth)                         | Provides extension point for handling the Authorization header                     |
-| [Authentication JWT](https://start.ktor.io/p/auth-jwt)                 | Handles JSON Web Token (JWT) bearer authentication scheme                          |
-| [Status Pages](https://start.ktor.io/p/status-pages)                   | Provides exception handling for routes                                             |
-| [Resources](https://start.ktor.io/p/resources)                         | Provides type-safe routing                                                         |
-| [Sessions](https://start.ktor.io/p/ktor-sessions)                      | Adds support for persistent sessions through cookies or headers                    |
-| [WebSockets](https://start.ktor.io/p/ktor-websockets)                  | Adds WebSocket protocol support for bidirectional client connections               |
+- **Kotlin 2.1.10** - Modern JVM language with concise syntax and null safety
+- **Ktor 3.1.2** - Lightweight asynchronous web framework
+- **Exposed 0.41.1** - Type-safe SQL framework for Kotlin
+- **PostgreSQL** - Relational database for persistence
+- **Koin 3.4.3** - Lightweight dependency injection framework
+- **JWT Authentication** - Secure API access with token-based authentication
+- **Docker & Docker Compose** - Containerization for local development
 
-## Building & Running
+## Getting Started
 
-To build or run the project, use one of the following tasks:
+### Prerequisites
 
-| Task                          | Description                                                          |
-| -------------------------------|---------------------------------------------------------------------- |
-| `./gradlew test`              | Run the tests                                                        |
-| `./gradlew build`             | Build everything                                                     |
-| `buildFatJar`                 | Build an executable JAR of the server with all dependencies included |
-| `buildImage`                  | Build the docker image to use with the fat JAR                       |
-| `publishImageToLocalRegistry` | Publish the docker image locally                                     |
-| `run`                         | Run the server                                                       |
-| `runDocker`                   | Run using the local docker image                                     |
+- JDK 17 or higher
+- Docker and Docker Compose
+- PostgreSQL client (optional)
 
-If the server starts successfully, you'll see the following output:
+### Setup & Running
 
-```
-2024-12-04 14:32:45.584 [main] INFO  Application - Application started in 0.303 seconds.
-2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8080
+1. **Clone the repository**
+
+```bash
+git clone https://github.com/yourusername/lifetree-app-api.git
+cd lifetree-app-api
 ```
 
+2. **Start the PostgreSQL database with Docker**
+
+```bash
+docker-compose up -d
+```
+
+3. **Build and run the application**
+
+```bash
+./gradlew run
+```
+
+The server will start on port 8081. You can access the API at `http://localhost:8081/api`.
+
+### Configuration
+
+Application settings are located in `src/main/resources/application.conf`. Environment variables can override these settings:
+
+- `PORT` - Server port (default: 8081)
+- `DATABASE_URL` - PostgreSQL connection URL
+- `DATABASE_USER` - Database username
+- `DATABASE_PASSWORD` - Database password
+- `JWT_SECRET` - Secret key for JWT token generation
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - Authenticate and receive JWT token
+
+### Requirements
+- `GET /api/requirements` - List all requirements
+- `GET /api/requirements/{id}` - Get a specific requirement
+- `POST /api/requirements` - Create a new requirement
+- `PUT /api/requirements/{id}` - Update a requirement
+- `DELETE /api/requirements/{id}` - Delete a requirement
+
+### Results
+- `GET /api/results` - List all results
+- `GET /api/results/{id}` - Get a specific result
+- `GET /api/results/requirement/{requirementId}` - Get results for a requirement
+- `POST /api/results` - Create a new result
+- `PUT /api/results/{id}` - Update a result
+- `DELETE /api/results/{id}` - Delete a result
+
+### Users
+- `GET /api/users/me` - Get current user details
+- `PUT /api/users/me` - Update current user profile
+- `GET /api/admin/users` - List all users (admin only)
+
+## Testing
+
+API endpoints can be tested using the HTTP request files in the project root:
+
+- `health-misc-api-tests.http` - Basic health check and system info
+- `requirements-api-tests.http` - Requirements API tests
+- `results-api-tests.http` - Results API tests
+- `users-api-tests.http` - User authentication and profile tests
+
+You can run these tests using IntelliJ IDEA's HTTP Client plugin.
+
+## Building for Production
+
+Build an executable JAR file:
+
+```bash
+./gradlew buildFatJar
+```
+
+Run the JAR file:
+
+```bash
+java -jar build/libs/lifetree-app-api-0.0.1-all.jar
+```
+
+## Database Schema
+
+The database schema is defined in `schema.sql` and includes tables for:
+
+- Users
+- Requirements
+- Results
+- Tags (for categorization)
+- Audit logs (for change tracking)
+
+## Project Structure
+
+The codebase follows a clean architecture approach:
+
+- `domain` - Business entities and logic
+  - `model` - Aggregates, entities and value objects
+  - `repository` - Repository interfaces
+  - `service` - Domain services
+- `application` - Application services and DTOs
+  - `dto` - Data transfer objects
+  - `mapper` - Object mapping utilities
+  - `service` - Application services
+- `infrastructure` - Technical implementations
+  - `config` - Application configuration
+  - `persistence` - Database access
+  - `security` - Authentication and authorization
+- `presentation` - API controllers and routes
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
