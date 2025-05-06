@@ -1,7 +1,7 @@
 // RequirementId.kt - 需求ID值对象
 package com.lifetree.domain.model.requirement
 
-import java.util.UUID
+import java.util.*
 
 data class RequirementId(val value: UUID) {
     companion object {

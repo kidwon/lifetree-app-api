@@ -10,7 +10,6 @@ import com.lifetree.domain.model.result.ResultId
 import com.lifetree.domain.model.result.ResultStatus
 import com.lifetree.domain.model.user.UserId
 import com.lifetree.domain.repository.ResultRepository
-import java.util.UUID
 
 class ResultApplicationService(
     private val resultRepository: ResultRepository

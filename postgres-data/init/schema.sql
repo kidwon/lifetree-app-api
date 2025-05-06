@@ -50,6 +50,22 @@ CREATE INDEX IF NOT EXISTS idx_results_created_by ON results(created_by);
 CREATE INDEX IF NOT EXISTS idx_results_status ON results(status);
 CREATE INDEX IF NOT EXISTS idx_results_related_requirement ON results(related_requirement_id);
 
+
+-- 需求申请表 (新增)
+CREATE TABLE IF NOT EXISTS requirement_applications (
+                                                        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    requirement_id UUID NOT NULL REFERENCES requirements(id) ON DELETE CASCADE,
+    applicant_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+                                                                 );
+
+-- 创建需求申请索引
+CREATE INDEX IF NOT EXISTS idx_requirement_applications_requirement ON requirement_applications(requirement_id);
+CREATE INDEX IF NOT EXISTS idx_requirement_applications_applicant ON requirement_applications(applicant_id);
+CREATE INDEX IF NOT EXISTS idx_requirement_applications_status ON requirement_applications(status);
+
 -- 添加触发器自动更新updated_at字段
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -74,6 +90,18 @@ CREATE TRIGGER update_requirements_updated_at
 -- 为结果表添加触发器
 CREATE TRIGGER update_results_updated_at
     BEFORE UPDATE ON results
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- 更新需求表的status定义或确保支持新状态
+-- 注意: 实际使用时检查你的数据库类型是否支持直接修改类型约束
+-- 如果你的数据库支持枚举类型，并且status是一个枚举类型，则需要更新它，否则不需要对表结构进行修改
+-- 例如在PostgreSQL中:
+-- ALTER TYPE requirement_status ADD VALUE IF NOT EXISTS 'CONFIRMING';
+
+-- 为需求申请表添加触发器自动更新updated_at字段
+CREATE TRIGGER update_requirement_applications_updated_at
+    BEFORE UPDATE ON requirement_applications
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 

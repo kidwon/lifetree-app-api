@@ -4,7 +4,7 @@ import com.lifetree.domain.model.user.User
 import com.lifetree.domain.model.user.UserId
 import com.lifetree.domain.model.user.UserRole
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 data class UserEntity(
     val id: UUID,

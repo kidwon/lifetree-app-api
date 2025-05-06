@@ -6,7 +6,7 @@ import com.lifetree.domain.model.requirement.RequirementId
 import com.lifetree.domain.model.requirement.RequirementStatus
 import com.lifetree.domain.model.user.UserId
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 data class RequirementEntity(
     val id: UUID,
@@ -18,18 +18,15 @@ data class RequirementEntity(
     val updatedAt: LocalDateTime
 ) {
     fun toDomain(): Requirement {
-        val requirementId = RequirementId(id)
-        val userId = UserId(createdBy)
-        val requirementStatus = RequirementStatus.fromString(status)
-
-        return Requirement.create(
-            id = requirementId,
+        return Requirement.reconstitute(
+            id = RequirementId(id),
             title = title,
             description = description,
-            createdBy = userId
-        ).apply {
-            updateStatus(requirementStatus)
-        }
+            status = RequirementStatus.fromString(status),
+            createdBy = UserId(createdBy),
+            createdAt = createdAt,
+            updatedAt = updatedAt
+        )
     }
 
     companion object {

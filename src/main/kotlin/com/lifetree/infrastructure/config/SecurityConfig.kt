@@ -1,6 +1,5 @@
 package com.lifetree.infrastructure.config
 
-import com.auth0.jwt.interfaces.JWTVerifier
 import com.lifetree.infrastructure.security.JwtProvider
 import io.ktor.http.*
 import io.ktor.server.application.*

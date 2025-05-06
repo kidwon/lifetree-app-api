@@ -5,7 +5,7 @@ import com.lifetree.presentation.controller.RequirementController
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -77,6 +77,97 @@ fun Route.requirementRoutes() {
     }
 }
 
+fun Route.requirementApplicationRoutes() {
+    val requirementController: RequirementController by inject()
+
+    // 需求申请相关路由
+    route("/api/requirements") {
+        // 需要身份验证的路由
+        authenticate {
+            // 获取当前用户创建的所有需求（包含申请信息）
+            get("/my-requirements") {
+                val principal = call.principal<JWTPrincipal>()
+                    ?: return@get call.respond(HttpStatusCode.Unauthorized)
+
+                val requirements = requirementController.getMyRequirementsWithApplications(principal)
+                call.respond(requirements)
+            }
+
+            // 获取当前用户申请的所有需求
+            get("/my-applications") {
+                val principal = call.principal<JWTPrincipal>()
+                    ?: return@get call.respond(HttpStatusCode.Unauthorized)
+
+                val applications = requirementController.getMyApplications(principal)
+                call.respond(applications)
+            }
+
+            // 申请接受需求
+            post("/{id}/accept") {
+                val principal = call.principal<JWTPrincipal>()
+                    ?: return@post call.respond(HttpStatusCode.Unauthorized)
+
+                val id = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing id")
+
+                try {
+                    val requirement = requirementController.acceptRequirement(id, principal)
+                    if (requirement != null) {
+                        call.respond(requirement)
+                    } else {
+                        call.respond(HttpStatusCode.NotFound, "Requirement not found")
+                    }
+                } catch (e: IllegalArgumentException) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("message" to e.message))
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "An error occurred"))
+                }
+            }
+
+            // 同意申请
+            post("/{id}/approve") {
+                val principal = call.principal<JWTPrincipal>()
+                    ?: return@post call.respond(HttpStatusCode.Unauthorized)
+
+                val id = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing id")
+
+                try {
+                    val requirement = requirementController.approveApplication(id, principal)
+                    if (requirement != null) {
+                        call.respond(requirement)
+                    } else {
+                        call.respond(HttpStatusCode.NotFound, "Requirement not found")
+                    }
+                } catch (e: IllegalArgumentException) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("message" to e.message))
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "An error occurred"))
+                }
+            }
+
+            // 拒绝申请
+            post("/{id}/reject") {
+                val principal = call.principal<JWTPrincipal>()
+                    ?: return@post call.respond(HttpStatusCode.Unauthorized)
+
+                val id = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing id")
+
+                try {
+                    val requirement = requirementController.rejectApplication(id, principal)
+                    if (requirement != null) {
+                        call.respond(requirement)
+                    } else {
+                        call.respond(HttpStatusCode.NotFound, "Requirement not found")
+                    }
+                } catch (e: IllegalArgumentException) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("message" to e.message))
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "An error occurred"))
+                }
+            }
+        }
+    }
+}
+
 // 路由配置函数
 fun Application.configureRouting() {
     routing {
@@ -90,6 +181,7 @@ fun Application.configureRouting() {
         requirementRoutes()
         resultRoutes()
         userRoutes()
+        requirementApplicationRoutes()
     }
 }
 

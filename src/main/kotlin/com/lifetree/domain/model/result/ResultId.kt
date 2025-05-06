@@ -1,6 +1,6 @@
 package com.lifetree.domain.model.result
 
-import java.util.UUID
+import java.util.*
 
 data class ResultId(val value: UUID) {
     companion object {

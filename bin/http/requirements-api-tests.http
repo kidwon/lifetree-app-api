@@ -13,6 +13,7 @@ Content-Type: application/json
   "email": "test@example.com",
   "password": "password123"
 }
+> {% client.global.set("authToken", response.body.token); %}
 
 ### 获取所有需求
 GET {{baseUrl}}/requirements

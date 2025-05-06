@@ -33,6 +33,21 @@ class Requirement private constructor(
                 updatedAt = now
             )
         }
+
+        internal fun reconstitute(
+            id: RequirementId,
+            title: String,
+            description: String,
+            status: RequirementStatus,
+            createdBy: UserId,
+            createdAt: LocalDateTime,
+            updatedAt: LocalDateTime
+        ): Requirement {
+            return Requirement(
+                id, title, description, status,
+                createdBy, createdAt, updatedAt
+            )
+        }
     }
 
     fun getTitle(): String = title

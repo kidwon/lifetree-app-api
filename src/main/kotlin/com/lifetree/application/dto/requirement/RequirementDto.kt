@@ -2,7 +2,6 @@
 package com.lifetree.application.dto.requirement
 
 import kotlinx.serialization.Serializable
-import java.time.LocalDateTime
 
 @Serializable
 data class RequirementDto(
