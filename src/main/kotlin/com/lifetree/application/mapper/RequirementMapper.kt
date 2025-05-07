@@ -26,12 +26,13 @@ object RequirementMapper {
         )
     }
 
-    // 带申请信息的DTO转换
+    // 带申请信息的DTO转换 - 添加了pendingApplicationsCount参数
     fun toWithApplicationDto(
         requirement: Requirement,
         application: RequirementApplication?,
         user: User?,
-        pendingApproval: Boolean
+        pendingApproval: Boolean,
+        pendingApplicationsCount: Int = 0
     ): RequirementWithApplicationDto {
         val applicant = user?.let {
             UserBasicDto(
@@ -51,7 +52,9 @@ object RequirementMapper {
             updatedAt = requirement.getUpdatedAt().format(dateTimeFormatter),
             applicant = applicant,
             applicationStatus = application?.getStatus()?.name,
-            pendingApproval = pendingApproval
+            pendingApproval = pendingApproval,
+            applicationId = application?.id?.toString(),
+            pendingApplicationsCount = pendingApplicationsCount
         )
     }
 }

@@ -15,5 +15,7 @@ data class RequirementWithApplicationDto(
     val updatedAt: String,
     val applicant: UserBasicDto? = null,
     val applicationStatus: String? = null,
-    val pendingApproval: Boolean = false
+    val pendingApproval: Boolean = false,
+    val applicationId: String? = null,  // 新增申请ID字段
+    val pendingApplicationsCount: Int = 0  // 新增待处理申请数量字段
 )

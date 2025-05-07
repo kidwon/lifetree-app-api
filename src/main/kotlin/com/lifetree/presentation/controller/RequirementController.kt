@@ -1,4 +1,4 @@
-// 完整的需求控制器 (RequirementController.kt)
+// 修改后的需求控制器 (RequirementController.kt)
 
 package com.lifetree.presentation.controller
 
@@ -6,6 +6,7 @@ import com.lifetree.application.dto.requirement.CreateRequirementDto
 import com.lifetree.application.dto.requirement.RequirementDto
 import com.lifetree.application.dto.requirement.RequirementWithApplicationDto
 import com.lifetree.application.dto.requirement.UpdateRequirementDto
+import com.lifetree.application.dto.requirement.application.ApplicationDto
 import com.lifetree.application.service.RequirementApplicationService
 import com.lifetree.domain.model.requirement.RequirementId
 import com.lifetree.domain.model.user.UserId
@@ -75,8 +76,6 @@ class RequirementController(
         return requirementService.deleteRequirement(requirementId)
     }
 
-    // 新增的方法
-
     // 获取当前用户创建的所有需求（包含申请信息）
     suspend fun getMyRequirementsWithApplications(principal: JWTPrincipal): List<RequirementWithApplicationDto> {
         val userId = principal.payload.getClaim("id").asString()
@@ -119,8 +118,8 @@ class RequirementController(
         return requirementService.acceptRequirement(requirementId, userIdObj)
     }
 
-    // 同意申请
-    suspend fun approveApplication(id: String, principal: JWTPrincipal): RequirementDto? {
+    // 同意申请 - 修改后需要传递applicationId
+    suspend fun approveApplication(id: String, applicationId: String, principal: JWTPrincipal): RequirementDto? {
         val requirementId = try {
             RequirementId.fromString(id)
         } catch (e: IllegalArgumentException) {
@@ -134,11 +133,11 @@ class RequirementController(
             return null
         }
 
-        return requirementService.approveApplication(requirementId, userIdObj)
+        return requirementService.approveApplication(requirementId, userIdObj, applicationId)
     }
 
-    // 拒绝申请
-    suspend fun rejectApplication(id: String, principal: JWTPrincipal): RequirementDto? {
+    // 拒绝申请 - 修改后需要传递applicationId
+    suspend fun rejectApplication(id: String, applicationId: String, principal: JWTPrincipal): RequirementDto? {
         val requirementId = try {
             RequirementId.fromString(id)
         } catch (e: IllegalArgumentException) {
@@ -152,6 +151,19 @@ class RequirementController(
             return null
         }
 
-        return requirementService.rejectApplication(requirementId, userIdObj)
+        return requirementService.rejectApplication(requirementId, userIdObj, applicationId)
+    }
+
+    // 获取指定需求的所有申请
+    suspend fun getApplicationsByRequirement(id: String, principal: JWTPrincipal): List<ApplicationDto> {
+        val requirementId = try {
+            RequirementId.fromString(id)
+        } catch (e: IllegalArgumentException) {
+            return emptyList()
+        }
+
+        // 可以在这里添加权限检查，确保只有需求创建者可以查看申请
+
+        return requirementService.getApplicationsByRequirement(requirementId)
     }
 }

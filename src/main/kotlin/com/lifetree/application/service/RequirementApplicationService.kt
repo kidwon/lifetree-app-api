@@ -1,4 +1,4 @@
-// 完整的需求应用服务 (RequirementApplicationService.kt)
+// 修改后的需求应用服务 (RequirementApplicationService.kt)
 
 package com.lifetree.application.service
 
@@ -22,8 +22,6 @@ class RequirementApplicationService(
     private val requirementApplicationRepository: RequirementApplicationRepository,
     private val userRepository: UserRepository
 ) {
-    // 原有的方法
-
     // 获取所有需求
     suspend fun getAllRequirements(): List<RequirementDto> {
         return requirementRepository.findAll()
@@ -80,35 +78,56 @@ class RequirementApplicationService(
         return requirementRepository.delete(id)
     }
 
-    // 新增的方法
+    // 修改后的方法 - 支持多人申请
 
-    // 获取指定用户创建的所有需求，包含申请信息
+    // 获取指定用户创建的所有需求，包含所有申请信息
     suspend fun getRequirementsWithApplications(userId: UserId): List<RequirementWithApplicationDto> {
         val requirements = requirementRepository.findByCreatedBy(userId)
         val result = mutableListOf<RequirementWithApplicationDto>()
 
         for (requirement in requirements) {
+            // 获取该需求的所有申请
             val applications = requirementApplicationRepository.findByRequirementId(requirement.id)
-            val dto = if (applications.isNotEmpty()) {
-                // 找出状态为等待确认的申请
-                val pendingApplication = applications.find { it.getStatus() == ApplicationStatus.PENDING }
 
-                if (pendingApplication != null) {
-                    val applicant = userRepository.findById(pendingApplication.getApplicantId())
-                    RequirementMapper.toWithApplicationDto(
-                        requirement,
-                        pendingApplication,
-                        applicant,
-                        true
-                    )
+            if (applications.isNotEmpty()) {
+                // 获取所有待处理的申请
+                val pendingApplications = applications.filter { it.getStatus() == ApplicationStatus.PENDING }
+
+                if (pendingApplications.isNotEmpty()) {
+                    // 有待处理的申请，为每个申请创建一个DTO
+                    for (application in pendingApplications) {
+                        val applicant = userRepository.findById(application.getApplicantId())
+                        val dto = RequirementMapper.toWithApplicationDto(
+                            requirement,
+                            application,
+                            applicant,
+                            true,
+                            pendingApplications.size // 传递待处理申请数量
+                        )
+                        result.add(dto)
+                    }
                 } else {
-                    RequirementMapper.toWithApplicationDto(requirement, null, null, false)
+                    // 没有待处理的申请，创建一个无申请信息的DTO
+                    val dto = RequirementMapper.toWithApplicationDto(
+                        requirement,
+                        null,
+                        null,
+                        false,
+                        0
+                    )
+                    result.add(dto)
                 }
             } else {
-                RequirementMapper.toWithApplicationDto(requirement, null, null, false)
+                // 没有申请，创建一个无申请信息的DTO
+                val dto = RequirementMapper.toWithApplicationDto(
+                    requirement,
+                    null,
+                    null,
+                    false,
+                    0
+                )
+                result.add(dto)
             }
-
-            result.add(dto)
         }
 
         return result
@@ -127,7 +146,8 @@ class RequirementApplicationService(
                     requirement,
                     application,
                     owner,
-                    false
+                    false,
+                    0 // 用户查看自己的申请不需要显示总申请数
                 )
                 result.add(dto)
             }
@@ -136,7 +156,7 @@ class RequirementApplicationService(
         return result
     }
 
-    // 申请接受需求
+    // 修改后的申请接受需求方法 - 允许多人申请同一个需求
     suspend fun acceptRequirement(requirementId: RequirementId, applicantId: UserId): RequirementDto? {
         val requirement = requirementRepository.findById(requirementId) ?: return null
 
@@ -145,16 +165,21 @@ class RequirementApplicationService(
             throw IllegalArgumentException("不能申请自己的需求")
         }
 
-        // 检查需求状态
-        if (requirement.getStatus() != RequirementStatus.CREATED) {
+        // 检查需求状态是否为CREATED或IN_PROGRESS (可接受的状态)
+        if (requirement.getStatus() != RequirementStatus.CREATED &&
+            requirement.getStatus() != RequirementStatus.IN_PROGRESS) {
             throw IllegalArgumentException("该需求当前状态不可申请接受")
         }
 
-        // 检查是否已经有未处理的申请
+        // 检查用户是否已经申请过这个需求
         val existingApplications = requirementApplicationRepository.findByRequirementId(requirementId)
-        val pendingApplication = existingApplications.find { it.getStatus() == ApplicationStatus.PENDING }
-        if (pendingApplication != null) {
-            throw IllegalArgumentException("该需求已有人申请，等待确认中")
+        val userApplication = existingApplications.find {
+            it.getApplicantId() == applicantId &&
+                    (it.getStatus() == ApplicationStatus.PENDING || it.getStatus() == ApplicationStatus.APPROVED)
+        }
+
+        if (userApplication != null) {
+            throw IllegalArgumentException("您已经申请过这个需求")
         }
 
         // 创建申请记录
@@ -164,15 +189,13 @@ class RequirementApplicationService(
         )
         requirementApplicationRepository.save(application)
 
-        // 更新需求状态为确认中
-        requirement.updateStatus(RequirementStatus.CONFIRMING)
-        val updatedRequirement = requirementRepository.save(requirement)
-
-        return RequirementMapper.toDto(updatedRequirement)
+        // 注意：不再修改需求状态，需求状态保持不变
+        // 返回最新的需求信息
+        return RequirementMapper.toDto(requirement)
     }
 
-    // 同意申请
-    suspend fun approveApplication(requirementId: RequirementId, ownerId: UserId): RequirementDto? {
+    // 同意申请 - 修改后支持多申请
+    suspend fun approveApplication(requirementId: RequirementId, ownerId: UserId, applicationId: String): RequirementDto? {
         val requirement = requirementRepository.findById(requirementId) ?: return null
 
         // 检查是否是需求创建者
@@ -180,29 +203,37 @@ class RequirementApplicationService(
             throw IllegalArgumentException("只有需求创建者可以审批申请")
         }
 
-        // 检查需求状态
-        if (requirement.getStatus() != RequirementStatus.CONFIRMING) {
-            throw IllegalArgumentException("该需求当前状态不是确认中")
+        // 获取指定的申请记录
+        val applicationIdObj = try {
+            com.lifetree.domain.model.requirement.application.ApplicationId.fromString(applicationId)
+        } catch (e: Exception) {
+            throw IllegalArgumentException("无效的申请ID")
         }
 
-        // 获取申请记录
-        val applications = requirementApplicationRepository.findByRequirementId(requirementId)
-        val pendingApplication = applications.find { it.getStatus() == ApplicationStatus.PENDING }
-            ?: throw IllegalArgumentException("未找到待处理的申请")
+        val application = requirementApplicationRepository.findById(applicationIdObj)
+            ?: throw IllegalArgumentException("未找到指定的申请")
+
+        // 检查申请状态
+        if (application.getStatus() != ApplicationStatus.PENDING) {
+            throw IllegalArgumentException("该申请已被处理")
+        }
 
         // 更新申请状态为已同意
-        pendingApplication.approve()
-        requirementApplicationRepository.save(pendingApplication)
+        application.approve()
+        requirementApplicationRepository.save(application)
 
-        // 更新需求状态为进行中
-        requirement.updateStatus(RequirementStatus.IN_PROGRESS)
-        val updatedRequirement = requirementRepository.save(requirement)
+        // 如果需求状态是CREATED，则更新为IN_PROGRESS
+        if (requirement.getStatus() == RequirementStatus.CREATED) {
+            requirement.updateStatus(RequirementStatus.IN_PROGRESS)
+            requirementRepository.save(requirement)
+        }
 
-        return RequirementMapper.toDto(updatedRequirement)
+        // 返回更新后的需求
+        return RequirementMapper.toDto(requirement)
     }
 
-    // 拒绝申请
-    suspend fun rejectApplication(requirementId: RequirementId, ownerId: UserId): RequirementDto? {
+    // 拒绝申请 - 修改后支持多申请
+    suspend fun rejectApplication(requirementId: RequirementId, ownerId: UserId, applicationId: String): RequirementDto? {
         val requirement = requirementRepository.findById(requirementId) ?: return null
 
         // 检查是否是需求创建者
@@ -210,24 +241,45 @@ class RequirementApplicationService(
             throw IllegalArgumentException("只有需求创建者可以审批申请")
         }
 
-        // 检查需求状态
-        if (requirement.getStatus() != RequirementStatus.CONFIRMING) {
-            throw IllegalArgumentException("该需求当前状态不是确认中")
+        // 获取指定的申请记录
+        val applicationIdObj = try {
+            com.lifetree.domain.model.requirement.application.ApplicationId.fromString(applicationId)
+        } catch (e: Exception) {
+            throw IllegalArgumentException("无效的申请ID")
         }
 
-        // 获取申请记录
-        val applications = requirementApplicationRepository.findByRequirementId(requirementId)
-        val pendingApplication = applications.find { it.getStatus() == ApplicationStatus.PENDING }
-            ?: throw IllegalArgumentException("未找到待处理的申请")
+        val application = requirementApplicationRepository.findById(applicationIdObj)
+            ?: throw IllegalArgumentException("未找到指定的申请")
+
+        // 检查申请状态
+        if (application.getStatus() != ApplicationStatus.PENDING) {
+            throw IllegalArgumentException("该申请已被处理")
+        }
 
         // 更新申请状态为已拒绝
-        pendingApplication.reject()
-        requirementApplicationRepository.save(pendingApplication)
+        application.reject()
+        requirementApplicationRepository.save(application)
 
-        // 更新需求状态为已创建
-        requirement.updateStatus(RequirementStatus.CREATED)
-        val updatedRequirement = requirementRepository.save(requirement)
+        // 需求状态保持不变
+        return RequirementMapper.toDto(requirement)
+    }
 
-        return RequirementMapper.toDto(updatedRequirement)
+    // 获取指定需求的所有申请
+    suspend fun getApplicationsByRequirement(requirementId: RequirementId): List<com.lifetree.application.dto.requirement.application.ApplicationDto> {
+        val applications = requirementApplicationRepository.findByRequirementId(requirementId)
+
+        return applications.map { application ->
+            val applicant = userRepository.findById(application.getApplicantId())
+            com.lifetree.application.dto.requirement.application.ApplicationDto(
+                id = application.id.toString(),
+                requirementId = application.getRequirementId().toString(),
+                applicantId = application.getApplicantId().toString(),
+                applicantName = applicant?.getName() ?: "未知用户",
+                applicantEmail = applicant?.getEmail() ?: "",
+                status = application.getStatus().name,
+                createdAt = application.createdAt.toString(),
+                updatedAt = application.getUpdatedAt().toString()
+            )
+        }
     }
 }
