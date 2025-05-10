@@ -61,10 +61,27 @@ CREATE TABLE IF NOT EXISTS requirement_applications (
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
                                                                  );
 
+-- WebAuthn凭据表
+CREATE TABLE IF NOT EXISTS webauthn_credentials (
+                                                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    credential_id TEXT NOT NULL,
+    public_key TEXT NOT NULL,
+    counter BIGINT NOT NULL DEFAULT 0,
+    credential_format VARCHAR(50) NOT NULL DEFAULT 'packed',
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+                                                   );
+
+
 -- 创建需求申请索引
 CREATE INDEX IF NOT EXISTS idx_requirement_applications_requirement ON requirement_applications(requirement_id);
 CREATE INDEX IF NOT EXISTS idx_requirement_applications_applicant ON requirement_applications(applicant_id);
 CREATE INDEX IF NOT EXISTS idx_requirement_applications_status ON requirement_applications(status);
+-- 创建索引
+CREATE INDEX IF NOT EXISTS idx_webauthn_credentials_user_id ON webauthn_credentials(user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_webauthn_credentials_credential_id ON webauthn_credentials(credential_id);
 
 -- 添加触发器自动更新updated_at字段
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -102,6 +119,12 @@ CREATE TRIGGER update_results_updated_at
 -- 为需求申请表添加触发器自动更新updated_at字段
 CREATE TRIGGER update_requirement_applications_updated_at
     BEFORE UPDATE ON requirement_applications
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- 添加触发器自动更新updated_at字段
+CREATE TRIGGER update_webauthn_credentials_updated_at
+    BEFORE UPDATE ON webauthn_credentials
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 

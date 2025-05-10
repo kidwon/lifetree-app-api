@@ -5,6 +5,7 @@ import com.lifetree.infrastructure.config.configureDatabases
 import com.lifetree.infrastructure.config.configureKoin
 import com.lifetree.infrastructure.config.configureSecurity
 import com.lifetree.presentation.route.configureRouting
+import com.lifetree.presentation.route.configureWebAuthnRouting
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
@@ -62,7 +63,7 @@ fun Application.module() {
 
     // 配置路由
     configureRouting()
+
+    // 配置WebAuthn路由
+    configureWebAuthnRouting()
 }
-
-
-
