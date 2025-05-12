@@ -7,7 +7,7 @@ import org.jetbrains.exposed.sql.javatime.datetime
 /**
  * WebAuthn凭据数据库表定义
  */
-object WebAuthnCredentials : Table() {
+object WebAuthnCredentials : Table("webauthn_credentials")  {
     val id = uuid("id").uniqueIndex()
     val userId = uuid("user_id").references(Users.id)
     val name = varchar("name", 255)
