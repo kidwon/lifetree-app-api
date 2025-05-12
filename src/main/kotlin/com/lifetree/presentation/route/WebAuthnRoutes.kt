@@ -18,7 +18,7 @@ import org.koin.ktor.ext.inject
 fun Route.webAuthnRoutes() {
     val webAuthnService by inject<WebAuthnApplicationService>()
 
-    route("/api/webauthn") {
+    route("/webauthn") {
         // 获取注册选项，需要已认证的用户
         authenticate {
             post("/registration/options") {

@@ -1,4 +1,4 @@
-// Requirements.kt - 数据库表定义
+// Requirements.kt - 数据库表定义 (添加协议字段)
 package com.lifetree.infrastructure.persistence.table
 
 import org.jetbrains.exposed.sql.Table
@@ -9,6 +9,7 @@ object Requirements : Table() {
     val title = varchar("title", 255)
     val description = text("description")
     val status = varchar("status", 50)
+    val agreement = text("agreement").nullable() // 新增协议字段，可为空
     val createdBy = uuid("created_by").references(Users.id)
     val createdAt = datetime("created_at")
     val updatedAt = datetime("updated_at")

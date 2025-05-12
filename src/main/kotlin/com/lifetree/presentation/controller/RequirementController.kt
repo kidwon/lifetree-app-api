@@ -1,4 +1,4 @@
-// 修改后的需求控制器 (RequirementController.kt)
+// 修改后的需求控制器 (RequirementController.kt) - 添加协议相关方法
 
 package com.lifetree.presentation.controller
 
@@ -65,6 +65,17 @@ class RequirementController(
         return requirementService.updateRequirement(requirementId, updateDto)
     }
 
+    // 更新需求协议（单独方法）
+    suspend fun updateRequirementAgreement(id: String, agreement: String?): RequirementDto? {
+        val requirementId = try {
+            RequirementId.fromString(id)
+        } catch (e: IllegalArgumentException) {
+            return null
+        }
+
+        return requirementService.updateRequirementAgreement(requirementId, agreement)
+    }
+
     // 删除需求
     suspend fun deleteRequirement(id: String): Boolean {
         val requirementId = try {
@@ -118,7 +129,7 @@ class RequirementController(
         return requirementService.acceptRequirement(requirementId, userIdObj)
     }
 
-    // 同意申请 - 修改后需要传递applicationId
+    // 同意申请
     suspend fun approveApplication(id: String, applicationId: String, principal: JWTPrincipal): RequirementDto? {
         val requirementId = try {
             RequirementId.fromString(id)
@@ -136,7 +147,7 @@ class RequirementController(
         return requirementService.approveApplication(requirementId, userIdObj, applicationId)
     }
 
-    // 拒绝申请 - 修改后需要传递applicationId
+    // 拒绝申请
     suspend fun rejectApplication(id: String, applicationId: String, principal: JWTPrincipal): RequirementDto? {
         val requirementId = try {
             RequirementId.fromString(id)

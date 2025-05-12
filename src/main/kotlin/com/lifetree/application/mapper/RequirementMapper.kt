@@ -1,4 +1,4 @@
-// 需求映射器更新 (RequirementMapper.kt)
+// 需求映射器更新 (RequirementMapper.kt) (添加对协议字段的支持)
 
 package com.lifetree.application.mapper
 
@@ -20,13 +20,14 @@ object RequirementMapper {
             title = requirement.getTitle(),
             description = requirement.getDescription(),
             status = requirement.getStatus().name,
+            agreement = requirement.getAgreement(), // 添加协议字段
             createdBy = requirement.createdBy.toString(),
             createdAt = requirement.createdAt.format(dateTimeFormatter),
             updatedAt = requirement.getUpdatedAt().format(dateTimeFormatter)
         )
     }
 
-    // 带申请信息的DTO转换 - 添加了pendingApplicationsCount参数
+    // 带申请信息的DTO转换
     fun toWithApplicationDto(
         requirement: Requirement,
         application: RequirementApplication?,
@@ -47,6 +48,7 @@ object RequirementMapper {
             title = requirement.getTitle(),
             description = requirement.getDescription(),
             status = requirement.getStatus().name,
+            agreement = requirement.getAgreement(), // 添加协议字段
             createdBy = requirement.createdBy.toString(),
             createdAt = requirement.createdAt.format(dateTimeFormatter),
             updatedAt = requirement.getUpdatedAt().format(dateTimeFormatter),

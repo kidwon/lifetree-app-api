@@ -1,4 +1,4 @@
-// 修改后的需求应用服务 (RequirementApplicationService.kt)
+// 需求应用服务更新 (RequirementApplicationService.kt) (添加对协议的支持)
 
 package com.lifetree.application.service
 
@@ -6,6 +6,7 @@ import com.lifetree.application.dto.requirement.CreateRequirementDto
 import com.lifetree.application.dto.requirement.RequirementDto
 import com.lifetree.application.dto.requirement.RequirementWithApplicationDto
 import com.lifetree.application.dto.requirement.UpdateRequirementDto
+import com.lifetree.application.dto.requirement.application.ApplicationDto
 import com.lifetree.application.mapper.RequirementMapper
 import com.lifetree.domain.model.requirement.Requirement
 import com.lifetree.domain.model.requirement.RequirementId
@@ -40,12 +41,13 @@ class RequirementApplicationService(
             .map { RequirementMapper.toDto(it) }
     }
 
-    // 创建需求
+    // 创建需求 (添加对协议的支持)
     suspend fun createRequirement(dto: CreateRequirementDto, currentUserId: UserId): RequirementDto {
         val requirement = Requirement.create(
             id = RequirementId.generate(),
             title = dto.title,
             description = dto.description,
+            agreement = dto.agreement, // 设置协议内容
             createdBy = currentUserId
         )
 
@@ -53,13 +55,17 @@ class RequirementApplicationService(
         return RequirementMapper.toDto(savedRequirement)
     }
 
-    // 更新需求
+    // 更新需求 (添加对协议的支持)
     suspend fun updateRequirement(id: RequirementId, dto: UpdateRequirementDto): RequirementDto? {
         val requirement = requirementRepository.findById(id) ?: return null
 
         // 应用更新
         dto.title?.let { requirement.updateTitle(it) }
         dto.description?.let { requirement.updateDescription(it) }
+
+        // 更新协议内容，注意这里可能是设置为null
+        requirement.updateAgreement(dto.agreement)
+
         dto.status?.let {
             try {
                 val status = RequirementStatus.fromString(it)
@@ -78,10 +84,20 @@ class RequirementApplicationService(
         return requirementRepository.delete(id)
     }
 
-    // 修改后的方法 - 支持多人申请
+    // 更新需求协议（单独API）
+    suspend fun updateRequirementAgreement(id: RequirementId, agreement: String?): RequirementDto? {
+        val requirement = requirementRepository.findById(id) ?: return null
+
+        requirement.updateAgreement(agreement)
+        val updatedRequirement = requirementRepository.save(requirement)
+        return RequirementMapper.toDto(updatedRequirement)
+    }
+
+    // 以下保留原有方法，略去代码内容...
 
     // 获取指定用户创建的所有需求，包含所有申请信息
     suspend fun getRequirementsWithApplications(userId: UserId): List<RequirementWithApplicationDto> {
+        // 原有实现保持不变
         val requirements = requirementRepository.findByCreatedBy(userId)
         val result = mutableListOf<RequirementWithApplicationDto>()
 
@@ -102,7 +118,7 @@ class RequirementApplicationService(
                             application,
                             applicant,
                             true,
-                            pendingApplications.size // 传递待处理申请数量
+                            pendingApplications.size
                         )
                         result.add(dto)
                     }
@@ -135,6 +151,7 @@ class RequirementApplicationService(
 
     // 获取当前用户申请的需求
     suspend fun getApplications(userId: UserId): List<RequirementWithApplicationDto> {
+        // 原有实现保持不变
         val applications = requirementApplicationRepository.findByApplicantId(userId)
         val result = mutableListOf<RequirementWithApplicationDto>()
 
@@ -147,7 +164,7 @@ class RequirementApplicationService(
                     application,
                     owner,
                     false,
-                    0 // 用户查看自己的申请不需要显示总申请数
+                    0
                 )
                 result.add(dto)
             }
@@ -156,7 +173,9 @@ class RequirementApplicationService(
         return result
     }
 
-    // 修改后的申请接受需求方法 - 允许多人申请同一个需求
+    // 申请接受需求的方法、同意申请方法、拒绝申请方法等保持不变...
+
+    // 申请接受需求方法 - 允许多人申请同一个需求
     suspend fun acceptRequirement(requirementId: RequirementId, applicantId: UserId): RequirementDto? {
         val requirement = requirementRepository.findById(requirementId) ?: return null
 
@@ -167,7 +186,8 @@ class RequirementApplicationService(
 
         // 检查需求状态是否为CREATED或IN_PROGRESS (可接受的状态)
         if (requirement.getStatus() != RequirementStatus.CREATED &&
-            requirement.getStatus() != RequirementStatus.IN_PROGRESS) {
+            requirement.getStatus() != RequirementStatus.IN_PROGRESS
+        ) {
             throw IllegalArgumentException("该需求当前状态不可申请接受")
         }
 
@@ -189,13 +209,16 @@ class RequirementApplicationService(
         )
         requirementApplicationRepository.save(application)
 
-        // 注意：不再修改需求状态，需求状态保持不变
         // 返回最新的需求信息
         return RequirementMapper.toDto(requirement)
     }
 
-    // 同意申请 - 修改后支持多申请
-    suspend fun approveApplication(requirementId: RequirementId, ownerId: UserId, applicationId: String): RequirementDto? {
+    // 同意申请方法保持不变
+    suspend fun approveApplication(
+        requirementId: RequirementId,
+        ownerId: UserId,
+        applicationId: String
+    ): RequirementDto? {
         val requirement = requirementRepository.findById(requirementId) ?: return null
 
         // 检查是否是需求创建者
@@ -232,8 +255,12 @@ class RequirementApplicationService(
         return RequirementMapper.toDto(requirement)
     }
 
-    // 拒绝申请 - 修改后支持多申请
-    suspend fun rejectApplication(requirementId: RequirementId, ownerId: UserId, applicationId: String): RequirementDto? {
+    // 拒绝申请方法保持不变
+    suspend fun rejectApplication(
+        requirementId: RequirementId,
+        ownerId: UserId,
+        applicationId: String
+    ): RequirementDto? {
         val requirement = requirementRepository.findById(requirementId) ?: return null
 
         // 检查是否是需求创建者
@@ -264,13 +291,13 @@ class RequirementApplicationService(
         return RequirementMapper.toDto(requirement)
     }
 
-    // 获取指定需求的所有申请
-    suspend fun getApplicationsByRequirement(requirementId: RequirementId): List<com.lifetree.application.dto.requirement.application.ApplicationDto> {
+    // 获取指定需求的所有申请方法保持不变
+    suspend fun getApplicationsByRequirement(requirementId: RequirementId): List<ApplicationDto> {
         val applications = requirementApplicationRepository.findByRequirementId(requirementId)
 
         return applications.map { application ->
             val applicant = userRepository.findById(application.getApplicantId())
-            com.lifetree.application.dto.requirement.application.ApplicationDto(
+            ApplicationDto(
                 id = application.id.toString(),
                 requirementId = application.getRequirementId().toString(),
                 applicantId = application.getApplicantId().toString(),

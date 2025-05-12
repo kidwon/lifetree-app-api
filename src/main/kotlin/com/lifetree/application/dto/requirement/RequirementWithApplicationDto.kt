@@ -1,4 +1,4 @@
-// 带申请信息的需求DTO (RequirementWithApplicationDto.kt)
+// 带申请信息的需求DTO (RequirementWithApplicationDto.kt) (添加协议字段)
 package com.lifetree.application.dto.requirement
 
 import com.lifetree.application.dto.user.UserBasicDto
@@ -10,12 +10,13 @@ data class RequirementWithApplicationDto(
     val title: String,
     val description: String,
     val status: String,
+    val agreement: String?, // 新增协议字段
     val createdBy: String,
     val createdAt: String,
     val updatedAt: String,
     val applicant: UserBasicDto? = null,
     val applicationStatus: String? = null,
     val pendingApproval: Boolean = false,
-    val applicationId: String? = null,  // 新增申请ID字段
-    val pendingApplicationsCount: Int = 0  // 新增待处理申请数量字段
+    val applicationId: String? = null,
+    val pendingApplicationsCount: Int = 0
 )

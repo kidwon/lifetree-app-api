@@ -1,4 +1,4 @@
-// RequirementRepositoryImpl.kt - 仓储实现
+// RequirementRepositoryImpl.kt - 仓储实现 (更新以支持协议字段)
 package com.lifetree.infrastructure.persistence.repository
 
 import com.lifetree.domain.model.requirement.Requirement
@@ -44,6 +44,7 @@ class RequirementRepositoryImpl : RequirementRepository {
                 it[title] = entity.title
                 it[description] = entity.description
                 it[status] = entity.status
+                it[agreement] = entity.agreement // 更新协议字段
                 it[updatedAt] = entity.updatedAt
             }
         } else {
@@ -53,6 +54,7 @@ class RequirementRepositoryImpl : RequirementRepository {
                 it[title] = entity.title
                 it[description] = entity.description
                 it[status] = entity.status
+                it[agreement] = entity.agreement // 设置协议字段
                 it[createdBy] = entity.createdBy
                 it[createdAt] = entity.createdAt
                 it[updatedAt] = entity.updatedAt
@@ -75,6 +77,7 @@ class RequirementRepositoryImpl : RequirementRepository {
             title = this[Requirements.title],
             description = this[Requirements.description],
             status = this[Requirements.status],
+            agreement = this[Requirements.agreement], // 获取协议字段
             createdBy = this[Requirements.createdBy],
             createdAt = this[Requirements.createdAt],
             updatedAt = this[Requirements.updatedAt]
