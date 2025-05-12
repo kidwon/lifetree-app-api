@@ -7,7 +7,6 @@ import com.lifetree.application.service.ResultApplicationService
 import com.lifetree.domain.model.requirement.RequirementId
 import com.lifetree.domain.model.result.ResultId
 import com.lifetree.domain.model.user.UserId
-import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 
 class ResultController(

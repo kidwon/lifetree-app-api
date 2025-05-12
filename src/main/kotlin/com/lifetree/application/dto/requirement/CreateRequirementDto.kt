@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CreateRequirementDto(
     val title: String,
-    val description: String
+    val description: String,
+    val agreement: String? = null
 )

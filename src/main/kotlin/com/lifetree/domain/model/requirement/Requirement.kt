@@ -1,4 +1,4 @@
-// Requirement.kt - 需求聚合根
+// Requirement.kt - 需求聚合根 (添加协议字段)
 package com.lifetree.domain.model.requirement
 
 import com.lifetree.domain.model.user.UserId
@@ -9,6 +9,7 @@ class Requirement private constructor(
     private var title: String,
     private var description: String,
     private var status: RequirementStatus,
+    private var agreement: String?, // 新增协议字段
     val createdBy: UserId,
     val createdAt: LocalDateTime,
     private var updatedAt: LocalDateTime
@@ -18,6 +19,7 @@ class Requirement private constructor(
             id: RequirementId,
             title: String,
             description: String,
+            agreement: String? = null, // 可选协议参数
             createdBy: UserId
         ): Requirement {
             require(title.isNotBlank()) { "Title cannot be blank" }
@@ -28,9 +30,26 @@ class Requirement private constructor(
                 title = title,
                 description = description,
                 status = RequirementStatus.CREATED,
+                agreement = agreement,
                 createdBy = createdBy,
                 createdAt = now,
                 updatedAt = now
+            )
+        }
+
+        internal fun reconstitute(
+            id: RequirementId,
+            title: String,
+            description: String,
+            status: RequirementStatus,
+            agreement: String?,
+            createdBy: UserId,
+            createdAt: LocalDateTime,
+            updatedAt: LocalDateTime
+        ): Requirement {
+            return Requirement(
+                id, title, description, status, agreement,
+                createdBy, createdAt, updatedAt
             )
         }
     }
@@ -40,6 +59,8 @@ class Requirement private constructor(
     fun getDescription(): String = description
 
     fun getStatus(): RequirementStatus = status
+
+    fun getAgreement(): String? = agreement
 
     fun getUpdatedAt(): LocalDateTime = updatedAt
 
@@ -59,7 +80,10 @@ class Requirement private constructor(
         status = newStatus
         updatedAt = LocalDateTime.now()
     }
+
+    // 新增更新协议方法
+    fun updateAgreement(newAgreement: String?) {
+        agreement = newAgreement
+        updatedAt = LocalDateTime.now()
+    }
 }
-
-
-

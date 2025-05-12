@@ -5,6 +5,9 @@ import com.lifetree.infrastructure.config.configureDatabases
 import com.lifetree.infrastructure.config.configureKoin
 import com.lifetree.infrastructure.config.configureSecurity
 import com.lifetree.presentation.route.configureRouting
+import com.lifetree.presentation.route.configureWebAuthnRouting
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
@@ -41,14 +44,42 @@ fun Application.module() {
 
     // 配置 CORS
     install(CORS) {
-        anyHost() // 允许任何主机，生产环境应该更具体地限制
-        allowHeader("Content-Type")
-        allowHeader("Authorization")
-        allowMethod(io.ktor.http.HttpMethod.Options)
-        allowMethod(io.ktor.http.HttpMethod.Get)
-        allowMethod(io.ktor.http.HttpMethod.Post)
-        allowMethod(io.ktor.http.HttpMethod.Put)
-        allowMethod(io.ktor.http.HttpMethod.Delete)
+        // 允许所有域
+        anyHost()
+        // 允许前端域名访问
+        // 允许从本地开发服务器访问
+        allowHost("localhost:8080", schemes = listOf("https", "http"))
+        allowHost("localhost:8081", schemes = listOf("https", "http"))
+        allowHost("127.0.0.1:8081", schemes = listOf("https", "http"))
+        allowHost("127.0.0.1:8080", schemes = listOf("https", "http"))
+
+        // 允许从生产前端域名访问
+        allowHost("frp-cup.com:44058", schemes = listOf("https"))
+        allowHost("frp-cup.com:52701", schemes = listOf("https"))
+        allowHost("www.u252116.nyat.app:52701/", schemes = listOf("https"))
+        allowHost("api.u252116.nyat.app:44058/", schemes = listOf("https"))
+
+        // 如果你还有其他需要访问的域名，也要添加进来
+        // 比如你的 GitHub Pages 域名或本kidwon开发域名
+        allowHost("kidwon.github.io", schemes = listOf("https"))
+
+        // 允许所有方法
+        allowMethod(HttpMethod.Options)
+        allowMethod(HttpMethod.Put)
+        allowMethod(HttpMethod.Delete)
+        allowMethod(HttpMethod.Patch)
+
+        // 允许所有头信息
+        allowHeader(HttpHeaders.Authorization)
+        allowHeader(HttpHeaders.ContentType)
+        allowHeader(HttpHeaders.Accept)
+        allowHeader("*")
+
+        allowCredentials = true
+        maxAgeInSeconds = 3600
+
+        // 允许的响应头（如果你的前端需要访问自定义响应头）
+        allowHeadersPrefixed("X-") // 允许所有 X- 开头的自定义头
     }
 
     // 配置依赖注入
@@ -62,7 +93,7 @@ fun Application.module() {
 
     // 配置路由
     configureRouting()
+
+    // 配置WebAuthn路由
+    configureWebAuthnRouting()
 }
-
-
-

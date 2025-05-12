@@ -5,6 +5,7 @@ val exposedVersion: String by project
 val postgresVersion: String by project
 val hikariCpVersion: String by project
 val koinVersion: String by project
+val webauthn4jVersion: String by project
 
 plugins {
     application
@@ -26,6 +27,9 @@ application {
 
 repositories {
     mavenCentral()
+    maven { // 新增 Spring 仓库
+        url = uri("https://repo.spring.io/release")
+    }
 }
 
 tasks.withType<ProcessResources> {
@@ -33,24 +37,6 @@ tasks.withType<ProcessResources> {
 }
 
 dependencies {
-//    implementation("io.ktor:ktor-server-cors")
-//    implementation("io.ktor:ktor-server-core")
-//    implementation("io.ktor:ktor-server-content-negotiation")
-//    implementation("io.ktor:ktor-serialization-kotlinx-json")
-//    implementation("io.ktor:ktor-server-call-logging")
-//    implementation("io.ktor:ktor-server-auth")
-//    implementation("io.ktor:ktor-server-auth-jwt")
-//    implementation("io.ktor:ktor-server-host-common")
-//    implementation("io.ktor:ktor-server-status-pages")
-//    implementation("io.ktor:ktor-server-resources")
-//    implementation("io.ktor:ktor-server-sessions")
-//    implementation("io.ktor:ktor-server-websockets")
-//    implementation("io.ktor:ktor-server-netty")
-//    implementation("ch.qos.logback:logback-classic:$logback_version")
-//    implementation("io.ktor:ktor-server-config-yaml")
-//    testImplementation("io.ktor:ktor-server-test-host")
-//    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
-
     // Ktor Core
     implementation("io.ktor:ktor-server-core:${ktorVersion}")
     implementation("io.ktor:ktor-server-netty:${ktorVersion}")
@@ -74,6 +60,16 @@ dependencies {
 // Testing
     testImplementation("io.ktor:ktor-server-test-host:${ktorVersion}")
     testImplementation("org.jetbrains.kotlin:kotlin-test:${kotlinVersion}")
+    // WebAuthn依赖
+    implementation("com.webauthn4j:webauthn4j-core:${webauthn4jVersion}")
+    implementation("com.webauthn4j:webauthn4j-util:${webauthn4jVersion}")
+// 可选，如果需要 Spring 集成
+// 新增
+    // Jackson 依赖
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.15.2")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.15.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
 }
 
 kotlin {

@@ -6,7 +6,7 @@ import com.lifetree.domain.model.result.ResultId
 import com.lifetree.domain.model.result.ResultStatus
 import com.lifetree.domain.model.user.UserId
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 data class ResultEntity(
     val id: UUID,
@@ -24,15 +24,16 @@ data class ResultEntity(
         val resultStatus = ResultStatus.fromString(status)
         val requirementId = relatedRequirementId?.let { RequirementId(it) }
 
-        return Result.create(
+        return Result.reconstitute(
             id = resultId,
             title = title,
             description = description,
+            status = resultStatus,
             relatedRequirementId = requirementId,
-            createdBy = userId
-        ).apply {
-            updateStatus(resultStatus)
-        }
+            createdBy = userId,
+            createdAt = createdAt,
+            updatedAt = updatedAt
+        )
     }
 
     companion object {

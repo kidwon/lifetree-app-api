@@ -37,6 +37,22 @@ class Result private constructor(
                 updatedAt = now
             )
         }
+
+        internal fun reconstitute(
+            id: ResultId,
+            title: String,
+            description: String,
+            status: ResultStatus,
+            relatedRequirementId: RequirementId?,
+            createdBy: UserId,
+            createdAt: LocalDateTime,
+            updatedAt: LocalDateTime
+        ): Result {
+            return Result(
+                id, title, description, status,
+                relatedRequirementId, createdBy, createdAt, updatedAt
+            )
+        }
     }
 
     fun getTitle(): String = title

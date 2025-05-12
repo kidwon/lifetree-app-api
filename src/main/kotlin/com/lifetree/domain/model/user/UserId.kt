@@ -1,6 +1,6 @@
 package com.lifetree.domain.model.user
 
-import java.util.UUID
+import java.util.*
 
 data class UserId(val value: UUID) {
     companion object {

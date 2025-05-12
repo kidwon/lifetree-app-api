@@ -14,19 +14,11 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Application.configureDatabases() {
-//    println("kkkkk")
-//    println(environment.config.propertyOrNull("database.driver"))
     val config = environment.config.config("database")
-    println(environment.config.property("database.driver").getString())
     val driverClassName = environment.config.property("database.driver").getString()
     val jdbcURL = environment.config.property("database.url").getString()
     val user = environment.config.property("database.user").getString()
     val password = environment.config.property("database.password").getString()
-
-//    val driverClassName = "org.postgresql.Driver"
-//    val jdbcURL = "jdbc:postgresql://localhost:5432/lifetree"
-//    val user = "postgres"
-//    val password = "password"
 
     val hikariConfig = HikariConfig().apply {
         this.driverClassName = driverClassName

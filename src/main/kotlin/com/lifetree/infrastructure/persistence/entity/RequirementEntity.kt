@@ -1,4 +1,4 @@
-// RequirementEntity.kt - 数据库实体
+// RequirementEntity.kt - 数据库实体 (添加协议字段)
 package com.lifetree.infrastructure.persistence.entity
 
 import com.lifetree.domain.model.requirement.Requirement
@@ -6,30 +6,29 @@ import com.lifetree.domain.model.requirement.RequirementId
 import com.lifetree.domain.model.requirement.RequirementStatus
 import com.lifetree.domain.model.user.UserId
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 data class RequirementEntity(
     val id: UUID,
     val title: String,
     val description: String,
     val status: String,
+    val agreement: String?, // 新增协议字段
     val createdBy: UUID,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime
 ) {
     fun toDomain(): Requirement {
-        val requirementId = RequirementId(id)
-        val userId = UserId(createdBy)
-        val requirementStatus = RequirementStatus.fromString(status)
-
-        return Requirement.create(
-            id = requirementId,
+        return Requirement.reconstitute(
+            id = RequirementId(id),
             title = title,
             description = description,
-            createdBy = userId
-        ).apply {
-            updateStatus(requirementStatus)
-        }
+            status = RequirementStatus.fromString(status),
+            agreement = agreement,
+            createdBy = UserId(createdBy),
+            createdAt = createdAt,
+            updatedAt = updatedAt
+        )
     }
 
     companion object {
@@ -39,6 +38,7 @@ data class RequirementEntity(
                 title = requirement.getTitle(),
                 description = requirement.getDescription(),
                 status = requirement.getStatus().name,
+                agreement = requirement.getAgreement(),
                 createdBy = requirement.createdBy.value,
                 createdAt = requirement.createdAt,
                 updatedAt = requirement.getUpdatedAt()

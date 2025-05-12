@@ -8,7 +8,6 @@ import com.lifetree.infrastructure.persistence.entity.UserEntity
 import com.lifetree.infrastructure.persistence.table.Users
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.statements.InsertStatement
 
 class UserRepositoryImpl : UserRepository {
 

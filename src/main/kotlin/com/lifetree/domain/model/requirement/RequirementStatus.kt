@@ -1,11 +1,11 @@
-// RequirementStatus.kt - 需求状态枚举
 package com.lifetree.domain.model.requirement
 
 enum class RequirementStatus {
-    CREATED,
-    IN_PROGRESS,
-    COMPLETED,
-    CANCELLED;
+    CREATED,       // 已创建
+    CONFIRMING,    // 确认中 (新增状态)
+    IN_PROGRESS,   // 进行中
+    COMPLETED,     // 已完成
+    CANCELLED;     // 已取消
 
     companion object {
         fun fromString(status: String): RequirementStatus {
