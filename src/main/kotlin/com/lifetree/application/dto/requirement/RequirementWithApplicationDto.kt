@@ -10,7 +10,8 @@ data class RequirementWithApplicationDto(
     val title: String,
     val description: String,
     val status: String,
-    val agreement: String?, // 新增协议字段
+    val agreement: String?,
+    val agreementButtonText: String?, // 新增协议按钮文本字段
     val createdBy: String,
     val createdAt: String,
     val updatedAt: String,

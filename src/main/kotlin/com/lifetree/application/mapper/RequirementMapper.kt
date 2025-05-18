@@ -1,4 +1,4 @@
-// 需求映射器更新 (RequirementMapper.kt) (添加对协议字段的支持)
+// 需求映射器更新 (RequirementMapper.kt) (添加对协议按钮文本字段的支持)
 
 package com.lifetree.application.mapper
 
@@ -15,12 +15,19 @@ object RequirementMapper {
 
     // 基本DTO转换
     fun toDto(requirement: Requirement): RequirementDto {
+        val buttonText = if (requirement.getAgreementButtonText() == Requirement.DEFAULT_AGREEMENT_BUTTON_TEXT) {
+            null // 如果是默认值，则返回null，减少传输数据量
+        } else {
+            requirement.getAgreementButtonText()
+        }
+
         return RequirementDto(
             id = requirement.id.toString(),
             title = requirement.getTitle(),
             description = requirement.getDescription(),
             status = requirement.getStatus().name,
-            agreement = requirement.getAgreement(), // 添加协议字段
+            agreement = requirement.getAgreement(),
+            agreementButtonText = buttonText,
             createdBy = requirement.createdBy.toString(),
             createdAt = requirement.createdAt.format(dateTimeFormatter),
             updatedAt = requirement.getUpdatedAt().format(dateTimeFormatter)
@@ -43,12 +50,19 @@ object RequirementMapper {
             )
         }
 
+        val buttonText = if (requirement.getAgreementButtonText() == Requirement.DEFAULT_AGREEMENT_BUTTON_TEXT) {
+            null // 如果是默认值，则返回null，减少传输数据量
+        } else {
+            requirement.getAgreementButtonText()
+        }
+
         return RequirementWithApplicationDto(
             id = requirement.id.toString(),
             title = requirement.getTitle(),
             description = requirement.getDescription(),
             status = requirement.getStatus().name,
-            agreement = requirement.getAgreement(), // 添加协议字段
+            agreement = requirement.getAgreement(),
+            agreementButtonText = buttonText,
             createdBy = requirement.createdBy.toString(),
             createdAt = requirement.createdAt.format(dateTimeFormatter),
             updatedAt = requirement.getUpdatedAt().format(dateTimeFormatter),

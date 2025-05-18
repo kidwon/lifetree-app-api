@@ -2,10 +2,7 @@
 
 package com.lifetree.application.service
 
-import com.lifetree.application.dto.requirement.CreateRequirementDto
-import com.lifetree.application.dto.requirement.RequirementDto
-import com.lifetree.application.dto.requirement.RequirementWithApplicationDto
-import com.lifetree.application.dto.requirement.UpdateRequirementDto
+import com.lifetree.application.dto.requirement.*
 import com.lifetree.application.dto.requirement.application.ApplicationDto
 import com.lifetree.application.mapper.RequirementMapper
 import com.lifetree.domain.model.requirement.Requirement
@@ -41,13 +38,14 @@ class RequirementApplicationService(
             .map { RequirementMapper.toDto(it) }
     }
 
-    // 创建需求 (添加对协议的支持)
+    // 创建需求 (添加对协议按钮文本的支持)
     suspend fun createRequirement(dto: CreateRequirementDto, currentUserId: UserId): RequirementDto {
         val requirement = Requirement.create(
             id = RequirementId.generate(),
             title = dto.title,
             description = dto.description,
-            agreement = dto.agreement, // 设置协议内容
+            agreement = dto.agreement,
+            agreementButtonText = dto.agreementButtonText, // 设置协议按钮文本
             createdBy = currentUserId
         )
 
@@ -55,7 +53,7 @@ class RequirementApplicationService(
         return RequirementMapper.toDto(savedRequirement)
     }
 
-    // 更新需求 (添加对协议的支持)
+    // 更新需求 (添加对协议按钮文本的支持，修复isInitialized问题)
     suspend fun updateRequirement(id: RequirementId, dto: UpdateRequirementDto): RequirementDto? {
         val requirement = requirementRepository.findById(id) ?: return null
 
@@ -63,8 +61,12 @@ class RequirementApplicationService(
         dto.title?.let { requirement.updateTitle(it) }
         dto.description?.let { requirement.updateDescription(it) }
 
-        // 更新协议内容，注意这里可能是设置为null
+        // 更新协议内容，无论是设置还是设为null
+        // 注意：不使用isInitialized，而是直接更新
         requirement.updateAgreement(dto.agreement)
+
+        // 更新协议按钮文本，无论是设置还是设为null
+        requirement.updateAgreementButtonText(dto.agreementButtonText)
 
         dto.status?.let {
             try {
@@ -79,9 +81,20 @@ class RequirementApplicationService(
         return RequirementMapper.toDto(updatedRequirement)
     }
 
+
     // 删除需求
     suspend fun deleteRequirement(id: RequirementId): Boolean {
         return requirementRepository.delete(id)
+    }
+    // 更新需求协议（单独API，添加对协议按钮文本的支持）
+    suspend fun updateRequirementAgreement(id: RequirementId, updateDto: UpdateAgreementRequestDto): RequirementDto? {
+        val requirement = requirementRepository.findById(id) ?: return null
+
+        requirement.updateAgreement(updateDto.agreement)
+        requirement.updateAgreementButtonText(updateDto.agreementButtonText)
+
+        val updatedRequirement = requirementRepository.save(requirement)
+        return RequirementMapper.toDto(updatedRequirement)
     }
 
     // 更新需求协议（单独API）

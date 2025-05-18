@@ -5,6 +5,7 @@ package com.lifetree.presentation.controller
 import com.lifetree.application.dto.requirement.CreateRequirementDto
 import com.lifetree.application.dto.requirement.RequirementDto
 import com.lifetree.application.dto.requirement.RequirementWithApplicationDto
+import com.lifetree.application.dto.requirement.UpdateAgreementRequestDto
 import com.lifetree.application.dto.requirement.UpdateRequirementDto
 import com.lifetree.application.dto.requirement.application.ApplicationDto
 import com.lifetree.application.service.RequirementApplicationService
@@ -74,6 +75,17 @@ class RequirementController(
         }
 
         return requirementService.updateRequirementAgreement(requirementId, agreement)
+    }
+
+    // 更新需求协议（单独方法）
+    suspend fun updateRequirementAgreement(id: String, updateDto: UpdateAgreementRequestDto): RequirementDto? {
+        val requirementId = try {
+            RequirementId.fromString(id)
+        } catch (e: IllegalArgumentException) {
+            return null
+        }
+
+        return requirementService.updateRequirementAgreement(requirementId, updateDto)
     }
 
     // 删除需求
