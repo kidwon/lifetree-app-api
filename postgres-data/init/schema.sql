@@ -59,7 +59,11 @@ CREATE TABLE IF NOT EXISTS requirements
 (
     50
 ) NOT NULL,
-    agreement TEXT, -- 新增协议字段，可为null
+    agreement TEXT, -- 协议内容字段
+    agreement_button_text VARCHAR
+(
+    20
+), -- 协议按钮文本字段
     created_by UUID NOT NULL REFERENCES users
 (
     id
@@ -246,23 +250,45 @@ END IF;
 END
 $$;
 
+-- 给现有的requirements表添加协议按钮文本字段（如果不存在）
+DO
+$$
+BEGIN
+  IF
+NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_name = 'requirements'
+    AND column_name = 'agreement_button_text'
+  ) THEN
+ALTER TABLE requirements
+    ADD COLUMN agreement_button_text VARCHAR(20) DEFAULT NULL;
+
+RAISE
+NOTICE 'Column agreement_button_text added to requirements table.';
+ELSE
+    RAISE NOTICE 'Column agreement_button_text already exists in requirements table.';
+END IF;
+END
+$$;
+
 -- 添加一些初始测试数据
 INSERT INTO users (id, email, password_hash, name, role)
 VALUES ('11111111-1111-1111-1111-111111111111', 'admin@example.com', 'hashed_password_here', '管理员', 'ADMIN'),
        ('22222222-2222-2222-2222-222222222222', 'user@example.com', 'hashed_password_here', '普通用户', 'USER');
 
--- 添加一些需求测试数据（包含协议字段）
-INSERT INTO requirements (id, title, description, status, agreement, created_by)
+-- 添加一些需求测试数据（包含协议字段和按钮文本字段）
+INSERT INTO requirements (id, title, description, status, agreement, agreement_button_text, created_by)
 VALUES ('33333333-3333-3333-3333-333333333333', '移动应用开发', '开发一个移动版应用，包含需求列表、结果列表等功能',
         'CREATED',
         '<h3>参与协议</h3><p>欢迎参与本需求工作。在您申请参与之前，请仔细阅读以下协议内容：</p><h4>1. 参与条件</h4><p>参与者同意按照需求描述完成相关工作，并遵守项目的时间节点和质量要求。</p><h4>2. 权利与责任</h4><p>参与者有权获取与工作相关的必要信息和资源，同时有责任保持信息的保密性。</p>',
-        '11111111-1111-1111-1111-111111111111'),
+        '点击接受协议', '11111111-1111-1111-1111-111111111111'),
        ('44444444-4444-4444-4444-444444444444', '网页设计优化', '对现有网页进行设计优化，提升用户体验和交互效果',
-        'IN_PROGRESS', NULL, '22222222-2222-2222-2222-222222222222'),
+        'IN_PROGRESS', NULL, NULL, '22222222-2222-2222-2222-222222222222'),
        ('55555555-5555-5555-5555-555555555555', '后端服务开发', '开发RESTful API服务，支持前端应用的数据需求',
         'COMPLETED',
         '<h3>后端开发服务协议</h3><p>本协议规定了参与后端开发的条款和条件：</p><h4>1. 技术要求</h4><p>参与者需要熟悉Kotlin和Ktor框架，能够按照RESTful规范开发API。</p><h4>2. 代码规范</h4><p>所有代码必须遵循项目的代码规范，并通过代码审查。</p>',
-        '11111111-1111-1111-1111-111111111111');
+        '我同意遵守开发规范', '11111111-1111-1111-1111-111111111111');
 
 -- 添加一些结果测试数据
 INSERT INTO results (id, title, description, status, related_requirement_id, created_by)

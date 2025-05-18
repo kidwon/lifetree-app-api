@@ -1,4 +1,4 @@
-// RequirementEntity.kt - 数据库实体 (添加协议字段)
+// RequirementEntity.kt - 数据库实体 (添加协议按钮文本字段)
 package com.lifetree.infrastructure.persistence.entity
 
 import com.lifetree.domain.model.requirement.Requirement
@@ -13,7 +13,8 @@ data class RequirementEntity(
     val title: String,
     val description: String,
     val status: String,
-    val agreement: String?, // 新增协议字段
+    val agreement: String?, // 协议内容字段
+    val agreementButtonText: String?, // 新增协议按钮文本字段
     val createdBy: UUID,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime
@@ -25,6 +26,7 @@ data class RequirementEntity(
             description = description,
             status = RequirementStatus.fromString(status),
             agreement = agreement,
+            agreementButtonText = agreementButtonText,
             createdBy = UserId(createdBy),
             createdAt = createdAt,
             updatedAt = updatedAt
@@ -39,6 +41,7 @@ data class RequirementEntity(
                 description = requirement.getDescription(),
                 status = requirement.getStatus().name,
                 agreement = requirement.getAgreement(),
+                agreementButtonText = requirement.getAgreementButtonText().takeIf { it != Requirement.DEFAULT_AGREEMENT_BUTTON_TEXT },
                 createdBy = requirement.createdBy.value,
                 createdAt = requirement.createdAt,
                 updatedAt = requirement.getUpdatedAt()

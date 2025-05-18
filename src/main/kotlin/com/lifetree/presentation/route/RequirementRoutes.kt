@@ -1,6 +1,7 @@
 // 修改后的需求路由 (RequirementRoutes.kt) - 添加协议相关路由
 package com.lifetree.presentation.route
 
+import com.lifetree.application.dto.requirement.UpdateAgreementRequestDto
 import com.lifetree.presentation.controller.RequirementController
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -63,15 +64,13 @@ fun Route.requirementRoutes() {
                 }
             }
 
-            // 新增：单独更新需求协议
             put("/{id}/agreement") {
                 val id = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest, "Missing id")
 
-                // 获取协议内容
-                val agreementData = call.receive<Map<String, String?>>()
-                val agreement = agreementData["agreement"]
+                // 获取协议更新数据
+                val agreementData = call.receive<UpdateAgreementRequestDto>()
 
-                val result = requirementController.updateRequirementAgreement(id, agreement)
+                val result = requirementController.updateRequirementAgreement(id, agreementData)
                 if (result != null) {
                     call.respond(result)
                 } else {
